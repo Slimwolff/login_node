@@ -1,0 +1,14 @@
+{
+  "name": "login_node",
+  "version": "1.0.0",
+  "description": "Login system on CLI",
+  "main": "file_provider.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Eric",
+  "license": "ISC",
+  "dependencies": {
+    "inquirer": "^8.1.2"
+  }
+}
