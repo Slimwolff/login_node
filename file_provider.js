@@ -1,38 +1,19 @@
-console.clear();
 const fs = require('fs');
 const $ = require('inquirer');
-// const readline = require('readline');
+const { rawListeners } = require('process');
 const path = "./users.json"
-let init = true;
 
-
-//object that is store users data
-let obj = {
-    name: "",
-    age: 0
-};
-
-
-    if (fs.existsSync('./users.json')) {
-
-    }else{
-        console.log("Creating file...");
-        createFile();
-    }
-
-
-
+const prompt = (object) => {
+    return $.prompt((object));
+}
 
 // read the file and return file content
 // getContentFile will return data in JSON format
 function getContetFile(){
-    console.log('getContentFile scope \n reading file...')
+    // console.log('getContentFile scope \n reading file...')
     return fs.readFileSync(path, 'utf8');
 
 }
-
-
-
 
 // write file with content as parameter
 function writeFile(path, data){
@@ -57,21 +38,23 @@ function createFile(){
 }
 
 async function login(){
-    let isPassed = false;
-    let foundUser = true;
-    let userList = JSON.parse(getContetFile());
-    try {
-       await $.prompt([
+    console.log('Enter your login and password:...');
+    let state = 0;
+    
+    let userLogin = "";
+    try {  
+        let userList = JSON.parse(getContetFile());
+       await prompt([
             {
                 type: 'input',
                 name: 'login',
-                message: 'Enter your login: '
+                message: 'Login: '
             },
             {
                 type: 'password',
                 name: 'password',
                 mask: '',
-                message: 'enter your passphrase: \n'
+                message: 'Password: '
             }]).then((answers) => {
                 let user = userList.users;
                 
@@ -80,27 +63,62 @@ async function login(){
                         if(user[i].login == answers.login){
                             if(user[i].password == answers.password){
                                 console.clear();
-                                console.log('Congratulations!! You are logged on the system!!!');
-                                isPassed = !isPassed;
+                                console.log('...');
+                                state = 2;
+                                userLogin = user[i].login;
                                 break;
+                            }else{
+                                state = 1;
+                                console.clear();
+                                // console.log('The password was incorrect');
+                                // login();
                             }
                         }
                     }
                     
-                    console.log('Login or password are invalid!!\nPlease verify login and password!!');
+                    
             
                 
         })
     } catch (error) {
         console.log(error);
+        process.exit(1);
     } finally {
-        if(isPassed){
+        if (state == 2) {
            console.log('You are logged in the system!!');
+           onLogin(userLogin);
+        }else if (state == 1) {
+            console.log('password was incorrect!!');
+            login();
         }else{
             start();
+            console.log('Login or password are invalid!!\nPlease verify login and password!!');
         }
         
     }
+}
+
+function onLogin(login){
+    this.user = login ? login : "";
+    console.log('Welcome: '+user);
+    prompt([{
+        type: 'rawlist',
+        name: 'action',
+        message: 'What you want to do?? ',
+        choices: ['Logout','Exit']
+    }]).then((answers) => { 
+        let opt = answers.action = answers.action || globalThis.addEventListener();
+
+        if(answers.action == 'Logout'){
+            console.clear();
+            console.log("bye bye!");
+            start();
+        }else{
+            console.clear();
+            console.log("See ya!!");
+            process.exit(0);
+        }
+    })
 }
 
 // add a new user to file
@@ -151,34 +169,38 @@ let initMsg = [
     }
 ];
 
-function start(){
+async function start(){
     console.clear;
+
+    if (fs.existsSync('./users.json')) {
+
+    }else{
+        console.log("Creating file...");
+        createFile();
+    }
+
+
     let opt = initMsg[0];
-    $.prompt((initMsg))
-    .then((answers) => {
-        
-
-        if(answers.action == opt.choices[0]){
-            console.clear();
-            login();
-            console.log("login with user and password")
-        }else if(answers.action == opt.choices[1]){
-            console.clear();
-            registerUser();
-            console.log("register new users");
-        }else if(answers.action == opt.choices[2]){
-            console.log("See ya!");
-            process.exit();
-        }
-        
-    })
-}
-
-
-while(init){
     
-    start();
+
     
-   init = !init; 
+        await $.prompt((initMsg)).then((answers) => {
+            if(answers.action == opt.choices[0]){
+                console.clear();
+                login();
+                // console.log("login with user and password")
+            }else if(answers.action == opt.choices[1]){
+                console.clear();
+                registerUser();
+                // console.log("register new users");
+            }else if(answers.action == opt.choices[2]){
+                console.log("See ya!");
+                process.exit();
+            }
+            
+        })
+    
     
 }
+
+start();
